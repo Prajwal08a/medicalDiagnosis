@@ -6,7 +6,31 @@ from dotenv import load_dotenv
 from tqdm.auto import tqdm
 from pinecone import Pinecone, ServerlessSpec
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+except Exception:
+    # Minimal fallback in case langchain isn't installed or has a different structure.
+    class RecursiveCharacterTextSplitter:
+        def __init__(self, chunk_size=500, chunk_overlap=100):
+            self.chunk_size = chunk_size
+            self.chunk_overlap = chunk_overlap
+
+        def split_documents(self, documents):
+            chunks = []
+            for doc in documents:
+                text = getattr(doc, 'page_content', '')
+                meta = getattr(doc, 'metadata', {}) or {}
+                start = 0
+                step = max(1, self.chunk_size - self.chunk_overlap)
+                while start < len(text):
+                    chunk_text = text[start:start + self.chunk_size]
+                    # create a simple object with expected attributes
+                    chunk = type('Chunk', (), {})()
+                    chunk.page_content = chunk_text
+                    chunk.metadata = dict(meta)
+                    chunks.append(chunk)
+                    start += step
+            return chunks
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from ..config.db import reports_collection
 from typing import List

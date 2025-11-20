@@ -1,4 +1,4 @@
-fastapi
+content = '''fastapi
 uvicorn
 pymongo
 python-multipart
@@ -15,3 +15,7 @@ streamlit
 requests
 PyPDF2
 tqdm
+'''
+with open(r'd:\Github\medicalDiagnosis\requirements.txt','w',encoding='utf-8') as f:
+    f.write(content)
+print('wrote requirements.txt')
